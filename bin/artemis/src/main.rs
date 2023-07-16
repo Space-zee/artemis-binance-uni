@@ -2,12 +2,13 @@ use anyhow::Result;
 use clap::Parser;
 use binance_uni::types::{Action, Event, Config};
 use ethers::providers::{Provider, Ws};
-use tracing::{info};
 use artemis_core::collectors::block_collector::BlockCollector;
 use std::sync::Arc;
 use binance_uni::strategy::BinanceUni;
 use artemis_core::engine::Engine;
 use artemis_core::types::{CollectorMap};
+use tracing::{info, Level};
+use tracing_subscriber::{filter, prelude::*};
 
 /// CLI Options.
 #[derive(Parser, Debug)]
@@ -19,6 +20,16 @@ pub struct Args {
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    let logfile = tracing_appender::rolling::never("../../logs", "binance_uni.log");
+// Log `INFO` and above to stdout.
+    let stdout = std::io::stdout.with_max_level(tracing::Level::INFO);
+
+    tracing_subscriber::fmt()
+        // Combine the stdout and log file `MakeWriter`s into one
+        // `MakeWriter` that writes to both
+        .with_writer(stdout.and(logfile))
+        .init();
+
     let args = Args::parse();
 
     // Set up ethers provider.

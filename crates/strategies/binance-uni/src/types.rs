@@ -15,23 +15,28 @@ pub enum Action {}
 pub struct Config {}
 
 #[derive(Debug, Deserialize)]
-pub struct BinancePriceResponse {
-    pub bidPrice: String,
-    pub bidQty: String,
-    pub askPrice: String,
-    pub askQty: String,
+pub struct BinanceOrdersResponse {
+    pub asks: Vec<(String, String)>,
+    pub bids: Vec<(String, String)>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct TokensPrice {
-    pub usdc: f32,
-    pub eth: f32,
+    pub usdc: f64,
+    pub eth: f64,
+    pub name: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Profit {
+    pub profit: f64,
+    pub amount: f64,
     pub name: String,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct PriceDifference {
-    pub difference_usd: f32,
-    pub difference_in_percent: f32,
+    pub difference_usd: f64,
+    pub difference_in_percent: f64,
     pub name: String,
 }
