@@ -122,7 +122,7 @@ impl<M: Middleware + 'static> BinanceUni<M> {
         }
     }
 
-    fn check_uni_profit(&self, amount: f64, sqrt_px96: U256, liquidity: U256, asks: Vec<(String, String)>, zero_for_one: bool) -> f64 {
+    fn check_uni_profit(&self, amount: f64, sqrt_px96: U256, liquidity: U256, orders: Vec<(String, String)>, zero_for_one: bool) -> f64 {
         if zero_for_one {
             let next_price = self.get_uni_price_after_swap(sqrt_px96, liquidity, parse_units(amount.to_string(), "mwei").unwrap().into(), zero_for_one);
             let amount_out = self.get_amount_out(next_price, sqrt_px96, liquidity, zero_for_one);
@@ -130,14 +130,14 @@ impl<M: Middleware + 'static> BinanceUni<M> {
             let mut profit_amount = 0.0;
             let mut i = 0;
             while amount_local != self.u256_to_f64(amount_out, "ether") {
-                if (amount_local + (asks[i].1).to_string().parse::<f64>().unwrap()) < self.u256_to_f64(amount_out, "ether") {
-                    amount_local = amount_local + (asks[i].1).to_string().parse::<f64>().unwrap();
-                    profit_amount = profit_amount + ((asks[i].1).to_string().parse::<f64>().unwrap() * (asks[i].0).to_string().parse::<f64>().unwrap());
+                if (amount_local + (orders[i].1).to_string().parse::<f64>().unwrap()) < self.u256_to_f64(amount_out, "ether") {
+                    amount_local = amount_local + (orders[i].1).to_string().parse::<f64>().unwrap();
+                    profit_amount = profit_amount + ((orders[i].1).to_string().parse::<f64>().unwrap() * (orders[i].0).to_string().parse::<f64>().unwrap());
                     i = i + 1;
                 } else {
                     let difference = self.u256_to_f64(amount_out, "ether") - amount_local;
                     amount_local = self.u256_to_f64(amount_out, "ether");
-                    profit_amount = profit_amount + (difference * (asks[i].0).to_string().parse::<f64>().unwrap());
+                    profit_amount = profit_amount + (difference * (orders[i].0).to_string().parse::<f64>().unwrap());
                     i = i + 1;
                 }
             }
@@ -149,14 +149,14 @@ impl<M: Middleware + 'static> BinanceUni<M> {
             let mut profit_amount = 0.0;
             let mut i = 0;
             while amount_local != self.u256_to_f64(amount_out, "mwei") {
-                if amount_local + ((asks[i].1).to_string().parse::<f64>().unwrap() * (asks[i].0).to_string().parse::<f64>().unwrap()) < self.u256_to_f64(amount_out, "mwei") {
-                    amount_local = amount_local + ((asks[i].1).to_string().parse::<f64>().unwrap() * (asks[i].0).to_string().parse::<f64>().unwrap());
-                    profit_amount = profit_amount + (asks[i].1).to_string().parse::<f64>().unwrap();
+                if amount_local + ((orders[i].1).to_string().parse::<f64>().unwrap() * (orders[i].0).to_string().parse::<f64>().unwrap()) < self.u256_to_f64(amount_out, "mwei") {
+                    amount_local = amount_local + ((orders[i].1).to_string().parse::<f64>().unwrap() * (orders[i].0).to_string().parse::<f64>().unwrap());
+                    profit_amount = profit_amount + (orders[i].1).to_string().parse::<f64>().unwrap();
                     i = i + 1;
                 } else {
                     let difference = self.u256_to_f64(amount_out, "mwei") - amount_local;
                     amount_local = self.u256_to_f64(amount_out, "mwei");
-                    profit_amount = profit_amount + (difference / (asks[i].0).to_string().parse::<f64>().unwrap());
+                    profit_amount = profit_amount + (difference / (orders[i].0).to_string().parse::<f64>().unwrap());
                     i = i + 1;
                 }
             }
@@ -164,20 +164,20 @@ impl<M: Middleware + 'static> BinanceUni<M> {
         }
     }
 
-    fn check_binance_profit(&self, amount: f64, sqrt_px96: U256, liquidity: U256, bids: Vec<(String, String)>, zero_for_one: bool) -> f64 {
+    fn check_binance_profit(&self, amount: f64, sqrt_px96: U256, liquidity: U256, orders: Vec<(String, String)>, zero_for_one: bool) -> f64 {
         if zero_for_one {
             let mut amount_local: f64 = 0.0;
             let mut amount_out: f64 = 0.0;
             let mut i = 0;
             while amount_local != amount {
-                if (amount_local + ((bids[i].1).to_string().parse::<f64>().unwrap() * (bids[i].0).to_string().parse::<f64>().unwrap())) < amount {
-                    amount_out = amount_out + (bids[i].1).to_string().parse::<f64>().unwrap();
-                    amount_local = amount_local + ((bids[i].1).to_string().parse::<f64>().unwrap() * (bids[i].0).to_string().parse::<f64>().unwrap());
+                if (amount_local + ((orders[i].1).to_string().parse::<f64>().unwrap() * (orders[i].0).to_string().parse::<f64>().unwrap())) < amount {
+                    amount_out = amount_out + (orders[i].1).to_string().parse::<f64>().unwrap();
+                    amount_local = amount_local + ((orders[i].1).to_string().parse::<f64>().unwrap() * (orders[i].0).to_string().parse::<f64>().unwrap());
                     i = i + 1;
                 } else {
                     let difference = amount - amount_local;
                     amount_local = amount;
-                    amount_out = amount_out + (difference / (bids[i].0).to_string().parse::<f64>().unwrap());
+                    amount_out = amount_out + (difference / (orders[i].0).to_string().parse::<f64>().unwrap());
                     i = i + 1;
                 }
             }
@@ -189,14 +189,14 @@ impl<M: Middleware + 'static> BinanceUni<M> {
             let mut amount_out: f64 = 0.0;
             let mut i = 0;
             while amount_local != amount {
-                if amount_local + (bids[i].1).to_string().parse::<f64>().unwrap() < amount {
-                    amount_out = amount_out + ((bids[i].1).to_string().parse::<f64>().unwrap() * (bids[i].0).to_string().parse::<f64>().unwrap());
-                    amount_local = amount_local + (bids[i].1).to_string().parse::<f64>().unwrap();
+                if amount_local + (orders[i].1).to_string().parse::<f64>().unwrap() < amount {
+                    amount_out = amount_out + ((orders[i].1).to_string().parse::<f64>().unwrap() * (orders[i].0).to_string().parse::<f64>().unwrap());
+                    amount_local = amount_local + (orders[i].1).to_string().parse::<f64>().unwrap();
                     i = i + 1;
                 } else {
                     let difference = amount - amount_local;
                     amount_local = amount;
-                    amount_out = amount_out + (difference * (bids[i].0).to_string().parse::<f64>().unwrap());
+                    amount_out = amount_out + (difference * (orders[i].0).to_string().parse::<f64>().unwrap());
                     i = i + 1;
                 }
             }
@@ -206,7 +206,7 @@ impl<M: Middleware + 'static> BinanceUni<M> {
         }
     }
 
-    fn binary_search_uni(&self, amount: f64, sqrt_px96: U256, liquidity: U256, asks: Vec<(String, String)>, zero_for_one: bool) -> Profit {
+    fn binary_search_uni(&self, amount: f64, sqrt_px96: U256, liquidity: U256, orders: Vec<(String, String)>, zero_for_one: bool) -> Profit {
         let mut left = 1.0;
         let mut right = amount;
         let mut max_return_value: f64 = 0.0;
@@ -214,7 +214,7 @@ impl<M: Middleware + 'static> BinanceUni<M> {
 
         while left <= right {
             let mid = (left + right) / 2.0;
-            let return_value = self.check_uni_profit(mid, sqrt_px96, liquidity, asks.clone(), zero_for_one);
+            let return_value = self.check_uni_profit(mid, sqrt_px96, liquidity, orders.clone(), zero_for_one);
             if return_value > max_return_value {
                 right = mid - 1.0;
                 max_return_value = return_value;
@@ -230,7 +230,7 @@ impl<M: Middleware + 'static> BinanceUni<M> {
         }
     }
 
-    fn binary_search_binance(&self, amount: f64, sqrt_px96: U256, liquidity: U256, bids: Vec<(String, String)>, zero_for_one: bool) -> Profit {
+    fn binary_search_binance(&self, amount: f64, sqrt_px96: U256, liquidity: U256, orders: Vec<(String, String)>, zero_for_one: bool) -> Profit {
         let mut left = 1.0;
         let mut right = amount;
         let mut max_return_value: f64 = 0.0;
@@ -238,7 +238,7 @@ impl<M: Middleware + 'static> BinanceUni<M> {
 
         while left <= right {
             let mid = (left + right) / 2.0;
-            let return_value = self.check_binance_profit(mid, sqrt_px96, liquidity, bids.clone(), zero_for_one);
+            let return_value = self.check_binance_profit(mid, sqrt_px96, liquidity, orders.clone(), zero_for_one);
             if return_value > max_return_value {
                 right = mid - 1.0;
                 max_return_value = return_value;
