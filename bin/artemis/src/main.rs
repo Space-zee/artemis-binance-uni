@@ -1,14 +1,14 @@
 use anyhow::Result;
 use clap::Parser;
-use binance_uni::types::{Action, Event, Config};
+use binance_uni::types::{Action, Event};
 use ethers::providers::{Provider, Ws};
 use artemis_core::collectors::block_collector::BlockCollector;
 use std::sync::Arc;
 use binance_uni::strategy::BinanceUni;
 use artemis_core::engine::Engine;
 use artemis_core::types::{CollectorMap};
-use tracing::{info, Level};
-use tracing_subscriber::{filter, prelude::*};
+use tracing::{info};
+use tracing_subscriber::{prelude::*};
 
 /// CLI Options.
 #[derive(Parser, Debug)]

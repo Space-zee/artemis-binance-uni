@@ -85,7 +85,7 @@ impl<M: Middleware + 'static> BinanceUni<M> {
                     i = i + 1;
                 }
                 let res = self.binary_search_uni(amount, sqrt_px96, liquidity, asks.clone(), false);
-                info!("ETH {:?}", res);
+                info!("ETH -> USDC on {:?} -- USDC -> ETH on Binance. Profit: {:?}. Amount: {:?}", res.name, res.profit, res.amount);
             } else {
                 let mut buy_price: f64 = (bids[0].0).to_string().parse::<f64>().unwrap();
                 while i < bids.len() && buy_price >= uni_price.eth {
@@ -94,7 +94,7 @@ impl<M: Middleware + 'static> BinanceUni<M> {
                     i = i + 1;
                 }
                 let res = self.binary_search_binance(amount, sqrt_px96, liquidity, bids.clone(), false);
-                info!("ETH {:?}", res);
+                info!("ETH -> USDC on {:?} -- USDC -> ETH on Uniswap. Profit: {:?}. Amount: {:?}", res.name, res.profit, res.amount);
             }
 
             // USDC -> ETH -> USDC
@@ -106,7 +106,7 @@ impl<M: Middleware + 'static> BinanceUni<M> {
                     i = i + 1;
                 }
                 let res = self.binary_search_uni(amount, sqrt_px96, liquidity, bids.clone(), true);
-                info!("USDC {:?}", res);
+                info!("USDC -> ETH on {:?} -- ETH -> USDC on Binance. Profit: {:?}. Amount: {:?}", res.name, res.profit, res.amount);
             } else {
                 let mut sell_price: f64 = (asks[0].0).to_string().parse::<f64>().unwrap();
                 while i < asks.len() && sell_price <= uni_price.eth {
@@ -115,7 +115,7 @@ impl<M: Middleware + 'static> BinanceUni<M> {
                     i = i + 1;
                 }
                 let res = self.binary_search_binance(amount, sqrt_px96, liquidity, asks.clone(), true);
-                info!("USDC {:?}", res);
+                info!("USDC -> ETH on {:?} -- ETH -> USDC on Uniswap. Profit: {:?}. Amount: {:?}", res.name, res.profit, res.amount);
             }
         } else {
             println!("Error: BinanceOrdersResponse is not available");
@@ -340,7 +340,7 @@ impl<M: Middleware + 'static> BinanceUni<M> {
         sum & U256::MAX
     }
 
-    fn price_difference(&self, a: TokensPrice, b: TokensPrice) -> HashMap<String, PriceDifference> {
+    fn _price_difference(&self, a: TokensPrice, b: TokensPrice) -> HashMap<String, PriceDifference> {
         let mut map: HashMap<String, PriceDifference> = HashMap::new();
         let eth_price_difference: PriceDifference = if a.eth > b.eth {
             PriceDifference {
